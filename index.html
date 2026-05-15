@@ -34,6 +34,26 @@
 --radius-lg:20px;
 --transition:.3s cubic-bezier(.4,0,.2,1)
 }
+[data-theme="light"]{
+--bg:#f1f5f9;
+--surface:#ffffff;
+--surface2:#f8fafc;
+--surface3:#e2e8f0;
+--border:#cbd5e1;
+--border2:#94a3b8;
+--text:#0f172a;
+--text2:#475569;
+--text3:#94a3b8;
+--accent:#0284c7;
+--accent2:#0d9488;
+--danger:#dc2626;
+--danger2:#991b1b;
+--warning:#d97706;
+--success:#16a34a;
+--gradient:linear-gradient(135deg,#0284c7,#0d9488);
+--gradient2:linear-gradient(135deg,#dbeafe,#bae6fd);
+--shadow:0 4px 24px rgba(0,0,0,0.08)
+}
 ::selection{background:var(--accent);color:#fff}
 body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:6px}
@@ -50,6 +70,10 @@ header{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);-webkit-back
 .logo-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface3);color:var(--text2);border:1px solid var(--border);-webkit-text-fill-color:var(--text2)}
 .header-stats{display:flex;gap:20px;font-size:13px;color:var(--text2)}
 .header-stats span{display:flex;align-items:center;gap:6px}
+.header-stats .clickable{cursor:pointer;transition:var(--transition);padding:4px 8px;border-radius:6px}
+.header-stats .clickable:hover{background:var(--surface2);color:var(--text)}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text2);transition:var(--transition);margin-left:12px;flex-shrink:0}
+.theme-toggle:hover{background:var(--surface3);color:var(--text)}
 
 /* Container */
 .container{max-width:1200px;margin:0 auto;padding:24px}
@@ -245,9 +269,9 @@ footer a:hover{text-decoration:underline}
 <span class="logo-badge">v1.0</span>
 </a>
 <div class="header-stats">
-<span>&#128200; Real-time analysis</span>
-<span>&#128274; Privacy-first</span>
+<span class="clickable" id="privacyBtn">&#128274; Privacy-first</span>
 </div>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#127769;</button>
 </div>
 </header>
 
@@ -298,8 +322,9 @@ footer a:hover{text-decoration:underline}
 <label for="sourceInput">Paste Email Headers &amp; Source</label>
 <textarea id="sourceInput" placeholder="Paste the raw email source or headers here...
 
-Tip: In Outlook, open the email &#8594; View &#8594; View Message Source
-In Gmail, open the email &#8594; Click three dots &#8594; Show original"></textarea>
+Tip: In Outlook (Windows) &#8594; View &#8594; View Message Source
+In Outlook (Mac) &#8594; Right-click (or Cmd+click) the email in the list &#8594; View Source
+In Gmail &#8594; Open email &#8594; Three dots &#8594; Show original"></textarea>
 <button class="btn btn-primary mt-16" id="checkSourceBtn">&#128269; Analyze Email</button>
 <p class="helper">Paste the full email source including headers. Mail Checker will parse SPF, DKIM, DMARC, and scan for phishing indicators.</p>
 </div>
@@ -470,10 +495,42 @@ setupTabs();
 setupDomainCheck();
 setupSourceCheck();
 setupScreenshot();
+setupTheme();
+setupPrivacy();
 if (window.location.protocol === 'file:') {
     showToast('Open via HTTP for full DNS checks: python3 -m http.server 8080', 'info');
 }
 });
+
+// === Theme Toggle ===
+function setupTheme() {
+const btn = document.getElementById('themeToggle');
+const saved = localStorage.getItem('mc-theme');
+if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    btn.innerHTML = '&#127774;';
+}
+btn.addEventListener('click', () => {
+    const html = document.documentElement;
+    const isLight = html.getAttribute('data-theme') === 'light';
+    if (isLight) {
+        html.removeAttribute('data-theme');
+        btn.innerHTML = '&#127769;';
+        localStorage.setItem('mc-theme', 'dark');
+    } else {
+        html.setAttribute('data-theme', 'light');
+        btn.innerHTML = '&#127774;';
+        localStorage.setItem('mc-theme', 'light');
+    }
+});
+}
+
+// === Privacy ===
+function setupPrivacy() {
+document.getElementById('privacyBtn').addEventListener('click', () => {
+    showToast('All analysis happens locally in your browser. No email content, domains, or screenshots are sent to any server.', 'info');
+});
+}
 
 // === Toast ===
 function showToast(msg, type = 'info') {
