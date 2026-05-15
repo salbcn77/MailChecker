@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mail Checker — Email Validation Tool</title>
+<meta name="description" content="Professional email validation tool. Detect phishing, fake domains, and suspicious emails.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0b0e17;
+--surface:#111827;
+--surface2:#1a2236;
+--surface3:#243050;
+--border:#2a3a5c;
+--border2:#3a4f7a;
+--text:#f1f5f9;
+--text2:#94a3b8;
+--text3:#64748b;
+--accent:#38bdf8;
+--accent2:#2dd4bf;
+--danger:#ef4444;
+--danger2:#b91c1c;
+--warning:#f59e0b;
+--success:#22c55e;
+--gradient:linear-gradient(135deg,#38bdf8,#2dd4bf);
+--gradient2:linear-gradient(135deg,#1e3a5f,#0ea5e9);
+--shadow:0 4px 24px rgba(0,0,0,0.4);
+--radius:12px;
+--radius-sm:8px;
+--radius-lg:20px;
+--transition:.3s cubic-bezier(.4,0,.2,1)
+}
+::selection{background:var(--accent);color:#fff}
+body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+
+/* Header */
+header{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(11,14,23,.85);border-bottom:1px solid var(--border)}
+.header-inner{max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-icon{width:40px;height:40px;background:var(--gradient);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;box-shadow:0 4px 12px rgba(56,189,248,.3)}
+.logo-text{font-size:20px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface3);color:var(--text2);border:1px solid var(--border);-webkit-text-fill-color:var(--text2)}
+.header-stats{display:flex;gap:20px;font-size:13px;color:var(--text2)}
+.header-stats span{display:flex;align-items:center;gap:6px}
+
+/* Container */
+.container{max-width:1200px;margin:0 auto;padding:24px}
+
+/* Hero */
+.hero{text-align:center;padding:32px 0 40px}
+.hero h1{font-size:36px;font-weight:800;line-height:1.2;margin-bottom:12px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:16px;color:var(--text2);max-width:560px;margin:0 auto;line-height:1.6}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:28px;background:var(--surface);padding:6px;border-radius:var(--radius);border:1px solid var(--border);overflow-x:auto}
+.tab-btn{flex:1;padding:12px 20px;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:14px;font-weight:500;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab-btn:hover{color:var(--text2);background:var(--surface2)}
+.tab-btn.active{color:var(--accent);background:var(--surface3);box-shadow:inset 0 1px 0 rgba(56,189,248,.1)}
+.tab-btn .icon{font-size:16px}
+
+/* Input Cards */
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:24px;transition:var(--transition)}
+.input-card:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.1)}
+.input-card label{display:block;font-size:14px;font-weight:600;color:var(--text2);margin-bottom:10px}
+.input-card input[type="text"],.input-card textarea{width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:15px;transition:var(--transition);outline:none}
+.input-card input[type="text"]:focus,.input-card textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.1)}
+.input-card textarea{min-height:200px;resize:vertical;font-family:'SF Mono',Fira Code,monospace;font-size:13px;line-height:1.5}
+.input-card .helper{font-size:12px;color:var(--text3);margin-top:8px}
+.input-row{display:flex;gap:12px}
+.input-row input{flex:1}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:var(--transition)}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 16px rgba(56,189,248,.25)}
+.btn-primary:hover{box-shadow:0 6px 24px rgba(56,189,248,.4);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface3);color:var(--text)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:var(--danger2)}
+
+/* Drag & Drop Zone */
+.dropzone{position:relative;border:2px dashed var(--border);border-radius:var(--radius);padding:48px 24px;text-align:center;cursor:pointer;transition:var(--transition);background:var(--surface2)}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--accent);background:rgba(56,189,248,.05)}
+.dropzone .icon{font-size:48px;margin-bottom:16px;display:block}
+.dropzone h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.dropzone p{font-size:13px;color:var(--text3)}
+.dropzone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.preview-area{margin-top:20px;display:none}
+.preview-area img{max-width:100%;max-height:300px;border-radius:var(--radius-sm);border:1px solid var(--border)}
+
+/* OCRA Status */
+.ocr-status{display:none;align-items:center;gap:12px;padding:12px 16px;background:var(--surface2);border-radius:var(--radius-sm);margin-top:16px;font-size:13px;color:var(--text2)}
+.ocr-status .spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Results */
+.results{display:none;margin-top:8px}
+.result-header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+.result-title{display:flex;align-items:center;gap:12px}
+.result-title h2{font-size:22px;font-weight:700}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.status-badge.safe{background:rgba(34,197,94,.15);color:var(--success);border:1px solid rgba(34,197,94,.3)}
+.status-badge.suspicious{background:rgba(245,158,11,.15);color:var(--warning);border:1px solid rgba(245,158,11,.3)}
+.status-badge.danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+.status-badge.unknown{background:rgba(148,163,184,.15);color:var(--text2);border:1px solid var(--border)}
+
+/* Score Gauge */
+.score-section{display:flex;align-items:center;gap:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:24px;flex-wrap:wrap}
+.gauge{position:relative;width:120px;height:120px;flex-shrink:0}
+.gauge svg{transform:rotate(-90deg)}
+.gauge .bg{fill:none;stroke:var(--surface2);stroke-width:8}
+.gauge .fg{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1),stroke .5s}
+.gauge .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .score-value{font-size:32px;font-weight:800;line-height:1}
+.gauge .score-label{font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:1px}
+.score-details{flex:1;min-width:200px}
+.score-details .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.score-details .detail-row:last-child{border-bottom:none}
+.score-details .detail-label{color:var(--text2)}
+.score-details .detail-value{font-weight:600}
+.score-details .detail-value.good{color:var(--success)}
+.score-details .detail-value.warn{color:var(--warning)}
+.score-details .detail-value.bad{color:var(--danger)}
+
+/* Checks Grid */
+.checks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:24px}
+.check-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:var(--transition)}
+.check-card:hover{border-color:var(--border2)}
+.check-card .check-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.check-card .check-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.check-card .check-icon.pass{background:rgba(34,197,94,.15);color:var(--success)}
+.check-card .check-icon.fail{background:rgba(239,68,68,.15);color:var(--danger)}
+.check-card .check-icon.warn{background:rgba(245,158,11,.15);color:var(--warning)}
+.check-card .check-icon.info{background:rgba(56,189,248,.15);color:var(--accent)}
+.check-card .check-info{flex:1}
+.check-card .check-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.check-card .check-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.check-card .check-status{font-size:12px;font-weight:600;margin-top:6px}
+.check-card .check-status.pass{color:var(--success)}
+.check-card .check-status.fail{color:var(--danger)}
+.check-card .check-status.warn{color:var(--warning)}
+
+/* Findings */
+.findings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+.findings-section h3{font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.findings-section h3 .count-badge{font-size:12px;padding:2px 10px;border-radius:12px;background:var(--surface3);color:var(--text2)}
+.finding-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.5}
+.finding-item:last-child{border-bottom:none}
+.finding-item .finding-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.finding-item .finding-text{color:var(--text2)}
+.finding-item .finding-text strong{color:var(--text)}
+.finding-item.critical .finding-icon{color:var(--danger)}
+.finding-item.warning .finding-icon{color:var(--warning)}
+.finding-item.info .finding-icon{color:var(--accent)}
+
+/* Detected Entities */
+.entity-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.entity-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text2)}
+.entity-tag .tag-label{font-weight:500;color:var(--text)}
+.entity-tag.danger{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.1)}
+.entity-tag.danger .tag-label{color:var(--danger)}
+.entity-tag.warning{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.1)}
+.entity-tag.warning .tag-label{color:var(--warning)}
+.entity-tag.safe{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.1)}
+.entity-tag.safe .tag-label{color:var(--success)}
+
+/* Details Toggle */
+.details-toggle{background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;padding:4px 0;display:inline-flex;align-items:center;gap:6px;transition:var(--transition)}
+.details-toggle:hover{color:var(--accent2)}
+.details-content{display:none;margin-top:12px;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:var(--text2);overflow-x:auto}
+.details-content pre{font-family:'SF Mono',Fira Code,monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+
+/* Steps Indicator */
+.steps{display:flex;gap:32px;justify-content:center;margin-bottom:40px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:12px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--text3);flex-shrink:0}
+.step-text{font-size:13px;color:var(--text3)}
+.step-arrow{color:var(--text3);font-size:18px}
+
+/* Tab content panels */
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Footer */
+footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);margin-top:48px}
+footer p{font-size:13px;color:var(--text3)}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;z-index:999;transform:translateY(120px);opacity:0;transition:var(--transition);max-width:400px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.info{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+.toast.error{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--danger)}
+.toast.success{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:var(--success)}
+
+/* Empty State */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-state .icon{font-size:64px;margin-bottom:16px;display:block;opacity:.5}
+.empty-state h3{font-size:18px;font-weight:600;color:var(--text2);margin-bottom:8px}
+.empty-state p{font-size:14px;max-width:400px;margin:0 auto}
+
+/* Responsive */
+@media(max-width:768px){
+.header-inner{padding:12px 16px}
+.header-stats{display:none}
+.hero h1{font-size:26px}
+.hero{padding:24px 0 28px}
+.container{padding:16px}
+.tabs{overflow-x:auto;gap:4px}
+.tab-btn{font-size:13px;padding:10px 14px}
+.input-card{padding:20px}
+.score-section{flex-direction:column;align-items:stretch;text-align:center}
+.gauge{margin:0 auto}
+.checks-grid{grid-template-columns:1fr}
+.result-header{flex-direction:column;align-items:flex-start}
+.steps{flex-direction:column;align-items:center;gap:12px}
+.step-arrow{transform:rotate(90deg)}
+}
+
+/* Utility */
+.mb-8{margin-bottom:8px}
+.mb-16{margin-bottom:16px}
+.mt-16{margin-top:16px}
+.hidden{display:none!important}
+.text-center{text-align:center}
+.text-sm{font-size:13px;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-inner">
+<a href="#" class="logo">
+<div class="logo-icon">M</div>
+<span class="logo-text">Mail Checker</span>
+<span class="logo-badge">v1.0</span>
+</a>
+<div class="header-stats">
+<span>&#128200; Real-time analysis</span>
+<span>&#128274; Privacy-first</span>
+</div>
+</div>
+</header>
+
+<div class="container">
+
+<div class="hero">
+<h1>Validate Any Email in Seconds</h1>
+<p>Upload a screenshot, paste email source, or enter a domain — Mail Checker analyzes every layer for signs of phishing, spoofing, and impersonation.</p>
+</div>
+
+<div class="steps">
+<div class="step"><span class="step-num">1</span><span class="step-text">Choose input method</span></div>
+<span class="step-arrow">&#8594;</span>
+<div class="step"><span class="step-num">2</span><span class="step-text">Automatic analysis</span></div>
+<span class="step-arrow">&#8594;</span>
+<div class="step"><span class="step-num">3</span><span class="step-text">Get detailed report</span></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" role="tablist">
+<button class="tab-btn active" data-tab="domain" role="tab">
+<span class="icon">&#127760;</span> Domain Check
+</button>
+<button class="tab-btn" data-tab="source" role="tab">
+<span class="icon">&#128196;</span> Email Source
+</button>
+<button class="tab-btn" data-tab="screenshot" role="tab">
+<span class="icon">&#128247;</span> Screenshot Upload
+</button>
+</div>
+
+<!-- Tab: Domain -->
+<div class="tab-content active" id="tab-domain" role="tabpanel">
+<div class="input-card">
+<label for="domainInput">Enter Email Domain or Full Email Address</label>
+<div class="input-row">
+<input type="text" id="domainInput" placeholder="e.g. company.com or user@suspicious-domain.com" autocomplete="off">
+<button class="btn btn-primary" id="checkDomainBtn">&#128269; Check Domain</button>
+</div>
+<p class="helper">Paste a full email address or just the domain name. Mail Checker will analyze it against 150+ known threats.</p>
+</div>
+<div id="domainResults" class="results"></div>
+</div>
+
+<!-- Tab: Email Source -->
+<div class="tab-content" id="tab-source" role="tabpanel">
+<div class="input-card">
+<label for="sourceInput">Paste Email Headers &amp; Source</label>
+<textarea id="sourceInput" placeholder="Paste the raw email source or headers here...
+
+Tip: In Outlook, open the email &#8594; View &#8594; View Message Source
+In Gmail, open the email &#8594; Click three dots &#8594; Show original"></textarea>
+<button class="btn btn-primary mt-16" id="checkSourceBtn">&#128269; Analyze Email</button>
+<p class="helper">Paste the full email source including headers. Mail Checker will parse SPF, DKIM, DMARC, and scan for phishing indicators.</p>
+</div>
+<div id="sourceResults" class="results"></div>
+</div>
+
+<!-- Tab: Screenshot -->
+<div class="tab-content" id="tab-screenshot" role="tabpanel">
+<div class="input-card">
+<label>Upload Email Screenshot</label>
+<div class="dropzone" id="dropzone">
+<input type="file" id="fileInput" accept="image/*">
+<span class="icon">&#128248;</span>
+<h3>Drop a screenshot here</h3>
+<p>or click to browse &bull; PNG, JPG, WEBP supported</p>
+</div>
+<div class="preview-area" id="previewArea">
+<img id="previewImage" alt="Uploaded screenshot">
+</div>
+<div id="ocrStatus" class="ocr-status">
+<div class="spinner"></div>
+<span id="ocrStatusText">Processing image with OCR...</span>
+</div>
+<button class="btn btn-primary mt-16 hidden" id="checkScreenshotBtn">&#128269; Analyze Extracted Text</button>
+<div class="ocr-text-area mt-16 hidden" id="ocrTextArea">
+<label for="ocrText">Extracted Text <span class="text-sm">(edit if needed)</span></label>
+<textarea id="ocrText" placeholder="Text extracted from screenshot will appear here..."></textarea>
+</div>
+</div>
+<div id="screenshotResults" class="results"></div>
+</div>
+
+</div><!-- /container -->
+
+<footer>
+<p>Mail Checker &mdash; Advanced Email Threat Analysis &bull; Built with &#128154; for a safer inbox</p>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ===== Microsoft Attack Simulation Training Domains =====
+const MICROSOFT_FAKE_DOMAINS = new Set([
+"attemplate.com","exportants.it","resetts.it","bankmenia.com","exportants.org","resetts.org",
+"bankmenia.de","financerta.com","salarytoolint.com","bankmenia.es","financerta.de","salarytoolint.net",
+"bankmenia.fr","financerta.es","securembly.com","bankmenia.it","financerta.fr","securembly.de",
+"bankmenia.org","financerta.it","securembly.es","banknown.de","financerta.org","securembly.fr",
+"banknown.es","financerts.com","securembly.it","banknown.fr","financerts.de","securembly.org",
+"banknown.it","financerts.es","securetta.de","banknown.org","financerts.fr","securetta.es",
+"browsersch.com","financerts.it","securetta.fr","browsersch.de","financerts.org","securetta.it",
+"browsersch.es","hardwarecheck.net","shareholds.com","browsersch.fr","hrsupportint.com","sharepointen.com",
+"browsersch.it","mcsharepoint.com","sharepointin.com","browsersch.org","mesharepoint.com","sharepointle.com",
+"docdeliveryapp.com","officence.com","sharesbyte.com","docdeliveryapp.net","officenced.com","sharession.com",
+"docstoreinternal.com","officences.com","sharestion.com","docstoreinternal.net","officentry.com","supportin.de",
+"doctorican.de","officested.com","supportin.es","doctorican.es","passwordle.de","supportin.fr",
+"doctorican.fr","passwordle.fr","supportin.it","doctorican.it","passwordle.it","supportres.de",
+"doctorican.org","passwordle.org","supportres.es","doctrical.com","payrolltooling.com","supportres.fr",
+"doctrical.de","payrolltooling.net","supportres.it","doctrical.es","prizeably.com","supportres.org",
+"doctrical.fr","prizeably.de","techidal.com","doctrical.it","prizeably.es","techidal.de",
+"doctrical.org","prizeably.fr","techidal.fr","doctricant.com","prizeably.it","techidal.it",
+"doctrings.com","prizeably.org","techniel.de","doctrings.de","prizegiveaway.net","techniel.es",
+"doctrings.es","prizegives.com","techniel.fr","doctrings.fr","prizemons.com","techniel.it",
+"doctrings.it","prizesforall.com","templateau.com","doctrings.org","prizewel.com","templatent.com",
+"exportants.com","prizewings.com","templatern.com","exportants.de","resetts.de","windocyte.com",
+"exportants.es","resetts.es","exportants.fr","resetts.fr"
+]);
+
+// Known legitimate brands for typosquat comparison
+const KNOWN_BRANDS = [
+"microsoft","office","outlook","sharepoint","azure","windows","teams","onedrive",
+"google","gmail","drive","youtube","android","chrome",
+"apple","icloud","itunes","mac",
+"amazon","aws","prime",
+"facebook","meta","instagram","whatsapp","messenger",
+"twitter","x",
+"linkedin",
+"netflix","spotify","paypal","ebay","dropbox","docusign","adobe","github","gitlab",
+"salesforce","oracle","ibm","intel","cisco","vmware","sap","atlassian","slack",
+"zoom","teams","webex","skype","whatsapp","telegram","signal",
+"bank","chase","wellsfargo","bankofamerica","citi","capitalone","amex","discover",
+"hsbc","barclays","natwest","lloyds","santander","ing","bnp","db","ubs","credit",
+"fedex","ups","usps","dhl","royalmail","dpd",
+"gov","irs","ssa","cdc","who","un","nato","treasury","justice","dhs","fbi","cia"
+];
+
+// Suspicious patterns in email content
+const SUSPICIOUS_PATTERNS = [
+{pattern:/\b(urgent|immediate\s*action|act\s*now|time\s*sensitive|expir(e|es|ing)\s*(today|soon))\b/i,label:"Urgency pressure tactic",severity:"warning"},
+{pattern:/\b(account\s*(will\s*be\s*)?(closed|suspended|terminated|deleted|locked|cancelled))\b/i,label:"Threat of account closure",severity:"critical"},
+{pattern:/\b(unusual\s*(sign.in|activity|login)|suspicious\s*(sign.in|activity|attempt|login))\b/i,label:"Suspicious activity alert",severity:"warning"},
+{pattern:/\b(verify\s*(your\s*)?(account|identity|credentials|login|information|details))\b/i,label:"Verification request",severity:"warning"},
+{pattern:/\b(click\s*(here|below|the\s*link)|follow\s*(this\s*)?link)\b/i,label:"Suspicious link prompt",severity:"warning"},
+{pattern:/\b(password|ssn|social\s*security|credit\s*card|bank\s*account|routing\s*number|atm\s*pin|security\s*question)\b/i,label:"Request for sensitive information",severity:"critical"},
+{pattern:/\b(dear\s*(user|customer|client|member|valued))\b/i,label:"Generic greeting (no name)",severity:"info"},
+{pattern:/\b(congratulations|you\s*(\'ve\s*)?won|selected|winner|lucky|prize)\b/i,label:"Prize/lottery lure",severity:"warning"},
+{pattern:/\b(free\s*(gift|iphone|ipad|card|cash|prize|vacation|trip))\b/i,label:"Free gift lure",severity:"warning"},
+{pattern:/\b(transfer\s*(of\s*)?funds|wire\s*transfer|money\s*transfe|western\s*union|moneygram)\b/i,label:"Money transfer request",severity:"critical"},
+{pattern:/\b(under\s*investigation|legal\s*(action|notice)|lawsuit|court\s*order|warrant|arrest)\b/i,label:"Legal threat",severity:"critical"},
+{pattern:/\b(update\s*(your\s*)?(payment|billing|subscription|membership))\b/i,label:"Payment update request",severity:"warning"},
+{pattern:/\b(security\s*(alert|breach|incident|notification))\b/i,label:"Security alert",severity:"info"},
+{pattern:/\b(microsoft\s*365|office\s*365|microsoft\s*team)\b/i,label:"Microsoft-themed phishing",severity:"info"},
+{pattern:/\b(share\s*point|sharepoint)\b/i,label:"SharePoint-themed phishing",severity:"info"},
+{pattern:/\b(2fa|mfa|two\s*factor|multi\s*factor|authenticator|otp)\b/i,label:"Authentication-themed",severity:"info"},
+{pattern:/\b(reply\s*to\s*this\s*email|reply\s*here)\b/i,label:"Reply-to-phishing indicator",severity:"warning"},
+{pattern:/\b(overdue\s*(payment|invoice|bill)|past\s*due|payment\s*failed)\b/i,label:"Payment overdue scare",severity:"warning"},
+{pattern:/\b(delivery\s*(attempt|failed|pending|problem)|package\s*(waiting|pending|undelivered))\b/i,label:"Delivery notification lure",severity:"warning"},
+{pattern:/\b(malware|virus|infected|compromised|hack(ed)?)\b/i,label:"Malware/compromise scare",severity:"critical"}
+];
+
+// Known benign domains for whitelist
+const KNOWN_LEGIT_DOMAINS = new Set([
+"microsoft.com","office.com","outlook.com","sharepoint.com","azure.com","windows.com","microsoft365.com",
+"live.com","hotmail.com","msn.com","passport.net","microsoftonline.com","office365.com",
+"google.com","gmail.com","youtube.com","googlemail.com","googleapps.com",
+"apple.com","icloud.com","me.com","mac.com",
+"amazon.com","aws.amazon.com","amazonaws.com",
+"facebook.com","meta.com","instagram.com","whatsapp.com","messenger.com",
+"twitter.com","x.com",
+"linkedin.com",
+"paypal.com","ebay.com","dropbox.com","docusign.com","adobe.com","github.com","gitlab.com",
+"salesforce.com","oracle.com","ibm.com","zoom.us","slack.com","teams.com","webex.com",
+"chase.com","wellsfargo.com","bankofamerica.com","citi.com","capitalone.com","americanexpress.com",
+"fedex.com","ups.com","usps.com","dhl.com",
+"gov","mil","edu","org"
+]);
+
+// Homoglyph characters for typosquat detection
+const HOMOGLYPHS = {
+'a':['à','á','â','ã','ä','å','ā','ă','ą','α','а','à','á','â','ã','ä','å','@'],
+'b':['β','в','Ь','ъ','ɓ'],
+'c':['ç','ć','ĉ','ċ','č','с','ς','¢','©','ϲ','с'],
+'d':['ð','ď','ɗ','ԁ'],
+'e':['è','é','ê','ë','ē','ĕ','ė','ę','ě','е','ё','є','ε','é','ê','ë','ė','ę','3'],
+'f':['ƒ','ſ','ф'],
+'g':['ğ','ġ','ģ','ɡ','ɠ','ց'],
+'h':['ħ','һ','հ','ն'],
+'i':['ì','í','î','ï','ĩ','ī','ĭ','į','ı','і','ї','í','î','ï','į','1','l','!','|','7'],
+'j':['ĵ','ј','յ'],
+'k':['ķ','ĸ','κ','κ','к','κ','ķ'],
+'l':['ĺ','ļ','ľ','ŀ','ł','ӏ','Ӏ','1','!','|','7'],
+'m':['м','ṃ','ɱ','м'],
+'n':['ñ','ń','ņ','ň','ŉ','ŋ','п','ή','η','ñ'],
+'o':['ò','ó','ô','õ','ö','ø','ō','ŏ','ő','ο','о','ö','ø','0','○','●'],
+'p':['ρ','р','þ','ρ'],
+'q':['ԛ','զ'],
+'r':['ŕ','ŗ','ř','г','я','г'],
+'s':['ś','ŝ','ş','š','ѕ','ș','ţ','ş','ŝ','ś','š','5'],
+'t':['ţ','ť','ŧ','т','ț','τ','т'],
+'u':['ù','ú','û','ü','ũ','ū','ŭ','ů','υ','у','ü','ú','û','ů','µ'],
+'v':['ν','ѵ','v'],
+'w':['ŵ','ω','ш','щ','ѡ'],
+'x':['×','х','ҳ','х','×'],
+'y':['ý','ÿ','ŷ','у','ў','ү','ý','ÿ','ŷ','γ'],
+'z':['ź','ż','ž','з','ζ','ž','ź','ż']
+};
+
+const DNS_API = 'https://cloudflare-dns.com/dns-query?name=';
+const DNS_HEADERS = { 'Accept': 'application/dns-json' };
+const DNS_FALLBACK = 'https://dns.google/dns?type=MX&name=';
+
+let ocrText = '';
+let cachedFakeDomains = new Set(MICROSOFT_FAKE_DOMAINS);
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+fetchMicrosoftDomains();
+setupTabs();
+setupDomainCheck();
+setupSourceCheck();
+setupScreenshot();
+if (window.location.protocol === 'file:') {
+    showToast('Open via HTTP for full DNS checks: python3 -m http.server 8080', 'info');
+}
+});
+
+// === Toast ===
+function showToast(msg, type = 'info') {
+const t = document.getElementById('toast');
+t.textContent = msg;
+t.className = 'toast ' + type;
+requestAnimationFrame(() => t.classList.add('show'));
+clearTimeout(t._hide);
+t._hide = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// === Fetch live Microsoft fake domains ===
+async function fetchMicrosoftDomains() {
+try {
+const resp = await fetch('https://raw.githubusercontent.com/HotCakeX/MicrosoftDomains/refs/heads/main/Microsoft%20Domains%20-%20Attack%20Simulation%20Training.txt');
+const text = await resp.text();
+const domains = text.split('\n').map(d => d.trim().toLowerCase()).filter(d => d && !d.startsWith('#'));
+domains.forEach(d => cachedFakeDomains.add(d));
+console.log(`[Mail Checker] Loaded ${cachedFakeDomains.size} fake domains`);
+} catch(e) {
+console.warn('[Mail Checker] Could not fetch live domain list, using embedded');
+}
+}
+
+// === Tab System ===
+function setupTabs() {
+document.querySelectorAll('.tab-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+btn.classList.add('active');
+document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+});
+});
+}
+
+// === DOMAIN CHECK ===
+function setupDomainCheck() {
+const input = document.getElementById('domainInput');
+const btn = document.getElementById('checkDomainBtn');
+const run = () => {
+const val = input.value.trim();
+if(val) checkDomain(val);
+};
+btn.addEventListener('click', run);
+input.addEventListener('keydown', e => { if(e.key === 'Enter') run(); });
+}
+
+function extractDomain(input) {
+input = input.trim().toLowerCase();
+if(input.includes('@')) input = input.split('@')[1];
+input = input.replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].split('?')[0];
+return input;
+}
+
+async function checkDomain(input) {
+const domain = extractDomain(input);
+if(!domain) { showToast('Please enter a domain or email address','error'); return; }
+
+const container = document.getElementById('domainResults');
+container.style.display = 'block';
+container.innerHTML = '<div class="text-center" style="padding:40px"><div class="spinner" style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><p style="color:var(--text3)">Analyzing domain...</p></div>';
+
+const results = await analyzeDomain(domain);
+renderResults(container, results, domain);
+}
+
+async function analyzeDomain(domain) {
+const checks = [];
+const findings = [];
+let score = 100;
+let maxScore = 100;
+
+// 1. Check against Microsoft fake domains
+const isMicrosoftFake = cachedFakeDomains.has(domain);
+if(isMicrosoftFake) {
+checks.push({name:'Microsoft Fake Domain Database',desc:'Domain found in Microsoft Attack Simulation Training list',status:'fail',icon:'fail'});
+findings.push({text:'Domain <strong>'+domain+'</strong> is listed in the Microsoft Attack Simulation Training database of known phishing domains.',severity:'critical'});
+score -= 40;
+} else {
+// Check subdomain/partial match
+let matchedFake = null;
+for(const fake of cachedFakeDomains) {
+if(domain.includes(fake) || fake.includes(domain)) {
+matchedFake = fake; break;
+}
+if(domain.split('.').slice(-2).join('.') === fake || fake.split('.').slice(-2).join('.') === domain.split('.').slice(-2).join('.')) {
+matchedFake = fake; break;
+}
+}
+if(matchedFake) {
+checks.push({name:'Microsoft Fake Domain Database',desc:'Domain partially matches known fake: '+matchedFake,status:'fail',icon:'fail'});
+findings.push({text:'Domain <strong>'+domain+'</strong> partially matches known Microsoft phishing domain <strong>'+matchedFake+'</strong>.',severity:'critical'});
+score -= 40;
+} else {
+checks.push({name:'Microsoft Fake Domain Database',desc:'Domain not found in known threat list',status:'pass',icon:'pass'});
+}
+}
+
+// 2. Exact match whitelist
+const isKnownLegit = [...KNOWN_LEGIT_DOMAINS].some(legit => domain === legit || domain.endsWith('.'+legit));
+if(isKnownLegit) {
+checks.push({name:'Known Legitimate Domain',desc:'Domain matches known legitimate service',status:'pass',icon:'pass'});
+findings.push({text:'Domain <strong>'+domain+'</strong> is a known legitimate domain.',severity:'info'});
+score = Math.min(100, score + 10);
+}
+
+// 3. Typosquatting check
+const typosquatResults = detectTyposquatting(domain);
+if(typosquatResults.length > 0) {
+checks.push({name:'Typosquatting / Lookalike Check',desc:typosquatResults.length+' potential impersonation pattern'+(typosquatResults.length>1?'s':''),status:'fail',icon:'fail'});
+typosquatResults.forEach(r => {
+findings.push({text:r,severity:'critical'});
+});
+score -= 30;
+} else {
+checks.push({name:'Typosquatting / Lookalike Check',desc:'No impersonation patterns detected',status:'pass',icon:'pass'});
+}
+
+// 4. Check number of subdomains / suspicious structure
+const parts = domain.split('.');
+if(parts.length > 3) {
+checks.push({name:'Domain Structure',desc:'Unusual number of subdomains ('+parts.length+' levels)',status:'warn',icon:'warn'});
+findings.push({text:'Domain has an unusual structure with <strong>'+parts.length+' levels</strong> of subdomains, which is atypical for legitimate services.',severity:'warning'});
+score -= 10;
+} else {
+checks.push({name:'Domain Structure',desc:'Standard domain structure',status:'pass',icon:'pass'});
+}
+
+// 5. Check for unusual TLD
+const tld = parts[parts.length-1];
+const commonTlds = ['com','org','net','edu','gov','mil','uk','de','fr','es','it','nl','eu','jp','au','ca','co','io','ai','dev','app','me','info','biz','tv','cc','xyz','online','site','top','club'];
+if(!commonTlds.includes(tld)) {
+checks.push({name:'Top-Level Domain Check',desc:'Uncommon TLD: .'+tld,status:'info',icon:'info'});
+findings.push({text:'Uses an uncommon top-level domain <strong>.'+tld+'</strong>. While not inherently malicious, many phishing sites use less common TLDs.',severity:'info'});
+}
+
+// 6. DNS MX Record check
+async function queryDNS(domain) {
+    const resp = await fetch(DNS_API + encodeURIComponent(domain) + '&type=MX', { headers: DNS_HEADERS });
+    if (!resp.ok) throw new Error('DNS query failed: ' + resp.status);
+    return await resp.json();
+}
+try {
+    const mxData = await queryDNS(domain);
+    if (mxData.Status === 0 && mxData.Answer && mxData.Answer.length > 0) {
+        const mxRecords = mxData.Answer.filter(r => r.type === 15);
+        if (mxRecords.length > 0) {
+            const exchanges = mxRecords.map(r => r.data);
+            checks.push({name:'MX Records',desc:mxRecords.length+' mail server'+(mxRecords.length>1?'s':'')+' configured',status:'pass',icon:'pass'});
+            const suspiciousMx = exchanges.some(e => {
+                const mxDomain = e.split(' ')[1] || e;
+                const mxTld = mxDomain.split('.').slice(-2).join('.');
+                return cachedFakeDomains.has(mxDomain) || cachedFakeDomains.has(mxTld);
+            });
+            if (suspiciousMx) {
+                findings.push({text:'Mail exchange servers point to suspicious domains: <strong>'+exchanges.join(', ')+'</strong>.',severity:'critical'});
+                score -= 25;
+            } else {
+                findings.push({text:'Domain has <strong>'+mxRecords.length+' mail exchange(s)</strong> configured: '+exchanges.join(', '),severity:'info'});
+            }
+        } else {
+            checks.push({name:'MX Records',desc:'No MX records found (other records exist)',status:'warn',icon:'warn'});
+            findings.push({text:'No MX records found for this domain. Legitimate email-sending domains typically have MX records.',severity:'warning'});
+            score -= 15;
+        }
+    } else if (mxData.Status === 3) {
+        checks.push({name:'MX Records',desc:'Domain does not exist (NXDOMAIN)',status:'fail',icon:'fail'});
+        findings.push({text:'The domain <strong>'+domain+'</strong> does not exist (NXDOMAIN). This is a strong indicator of a fake email.',severity:'critical'});
+        score -= 30;
+    } else {
+        checks.push({name:'MX Records',desc:'DNS query returned no results',status:'warn',icon:'warn'});
+        findings.push({text:'No DNS records found. The domain may not exist or may be very new.',severity:'warning'});
+        score -= 15;
+    }
+} catch(e) {
+    // Try fallback DNS provider
+    try {
+        const resp = await fetch(DNS_FALLBACK + encodeURIComponent(domain));
+        if (resp.ok) {
+            const mxData = await resp.json();
+            if (mxData.Answer && mxData.Answer.length > 0) {
+                const mxRecords = mxData.Answer.filter(r => r.type === 15);
+                if (mxRecords.length > 0) {
+                    const exchanges = mxRecords.map(r => r.data);
+                    checks.push({name:'MX Records (fallback)',desc:mxRecords.length+' mail server'+(mxRecords.length>1?'s':'')+' configured',status:'pass',icon:'pass'});
+                    findings.push({text:'Domain has <strong>'+mxRecords.length+' mail exchange(s)</strong> configured: '+exchanges.join(', '),severity:'info'});
+                } else {
+                    checks.push({name:'MX Records',desc:'No MX records found',status:'warn',icon:'warn'});
+                    findings.push({text:'No MX records found for this domain.',severity:'warning'});
+                    score -= 15;
+                }
+            } else {
+                checks.push({name:'MX Records',desc:'DNS query returned no results',status:'warn',icon:'warn'});
+                findings.push({text:'No DNS records found. The domain may not exist.',severity:'warning'});
+                score -= 15;
+            }
+        } else {
+            throw new Error('Fallback also failed');
+        }
+    } catch(e2) {
+        checks.push({name:'MX Records',desc:'Could not query DNS (browser restriction)',status:'info',icon:'info'});
+        findings.push({text:'Unable to perform DNS lookup — browser blocks cross-origin requests from <code>file://</code>. Serve via HTTP: <code>python3 -m http.server 8080</code> then open <code>http://localhost:8080</code>.',severity:'info'});
+    }
+}
+
+// 7. Check domain length
+if(domain.length > 30) {
+checks.push({name:'Domain Length',desc:'Unusually long domain ('+domain.length+' chars)',status:'warn',icon:'warn'});
+findings.push({text:'Domain is <strong>'+domain.length+' characters long</strong>, which is unusually long. Phishing sites often use long domains to hide malicious intent.',severity:'warning'});
+score -= 5;
+} else {
+checks.push({name:'Domain Length',desc:'Standard domain length',status:'pass',icon:'pass'});
+}
+
+// 8. Check for IP address instead of domain
+const ipPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+if(ipPattern.test(domain)) {
+checks.push({name:'Direct IP Address',desc:'Domain is an IP address, not a named domain',status:'fail',icon:'fail'});
+findings.push({text:'The address is a raw IP address (<strong>'+domain+'</strong>). Legitimate email services rarely use bare IP addresses.',severity:'critical'});
+score -= 25;
+}
+
+// 9. Check for suspicious keywords in domain
+const domainKeywords = parts[0].split(/[\-_\.]+/);
+const suspiciousKeywords = ['secure','login','signin','verify','account','update','confirm','reset','authenticate','validate','security','bank','support','help','service','alert','notification','verification','auth','ssl','https','web','online','portal','access','protect','protection'];
+const foundKeywords = domainKeywords.filter(k => suspiciousKeywords.includes(k));
+if(foundKeywords.length > 0) {
+checks.push({name:'Suspicious Keywords',desc:'Domain contains: '+foundKeywords.join(', '),status:'warn',icon:'warn'});
+findings.push({text:'Domain contains words often used in phishing: <strong>'+foundKeywords.join(', ')+'</strong>.',severity:'warning'});
+score -= 10;
+}
+
+// 10. Hyphen count check
+const hyphenCount = (domain.match(/\-/g) || []).length;
+if(hyphenCount > 2) {
+checks.push({name:'Excessive Hyphens',desc:domain+' has '+hyphenCount+' hyphens',status:'warn',icon:'warn'});
+findings.push({text:'Domain contains <strong>'+hyphenCount+' hyphens</strong>. Many phishing sites use excessive hyphens to mimic legitimate domain names.',severity:'warning'});
+score -= 5;
+}
+
+// Normalize score
+score = Math.max(0, Math.min(100, score));
+
+return {score,checks,findings,maxScore};
+}
+
+// === TYPOSQUATTING DETECTION ===
+function detectTyposquatting(domain) {
+const results = [];
+const namePart = domain.split('.')[0].toLowerCase();
+
+for(const brand of KNOWN_BRANDS) {
+const brandLower = brand.toLowerCase();
+if(domain.includes(brandLower)) continue; // legit subdomain
+
+// Levenshtein distance
+const dist = levenshtein(namePart, brandLower);
+if(dist > 0 && dist <= 2 && namePart.length >= 4 && brandLower.length >= 4) {
+results.push('Domain <strong>'+domain+'</strong> is only '+dist+' character'+(dist>1?'s':'')+' away from <strong>'+brand+'.com</strong> (typosquatting).');
+continue;
+}
+
+// Contains brand as substring with extra chars
+if(namePart.includes(brandLower) && namePart.length > brandLower.length + 2) {
+results.push('Domain <strong>'+domain+'</strong> contains <strong>'+brand+'</strong> with extra characters — common phishing tactic.');
+continue;
+}
+
+// Brand is substring with small change
+if(brandLower.includes(namePart) && brandLower.length > namePart.length + 2) {
+// shortened version of brand name
+}
+}
+
+// Check for homoglyph substitutions
+for(const brand of KNOWN_BRANDS) {
+const brandLower = brand.toLowerCase();
+if(domain.includes(brandLower)) continue;
+if(Math.abs(namePart.length - brandLower.length) > 3) continue;
+
+const normalizedBrand = normalizeHomoglyphs(brandLower);
+const normalizedName = normalizeHomoglyphs(namePart);
+
+if(normalizedName === normalizedBrand && namePart !== brandLower) {
+results.push('Domain <strong>'+domain+'</strong> uses lookalike (homoglyph) characters to impersonate <strong>'+brand+'</strong>.');
+break;
+}
+}
+
+return results;
+}
+
+function normalizeHomoglyphs(str) {
+let result = '';
+for(const ch of str) {
+let found = false;
+for(const [key,values] of Object.entries(HOMOGLYPHS)) {
+if(values.includes(ch)) {
+result += key;
+found = true;
+break;
+}
+}
+if(!found) result += ch;
+}
+return result;
+}
+
+function levenshtein(a,b) {
+const m = a.length, n = b.length;
+const dp = Array.from({length:m+1},()=>Array(n+1).fill(0));
+for(let i=0;i<=m;i++) dp[i][0]=i;
+for(let j=0;j<=n;j++) dp[0][j]=j;
+for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+return dp[m][n];
+}
+
+// === EMAIL SOURCE CHECK ===
+function setupSourceCheck() {
+const btn = document.getElementById('checkSourceBtn');
+btn.addEventListener('click', () => {
+const val = document.getElementById('sourceInput').value.trim();
+if(val) checkEmailSource(val);
+});
+}
+
+async function checkEmailSource(source) {
+const container = document.getElementById('sourceResults');
+container.style.display = 'block';
+container.innerHTML = '<div class="text-center" style="padding:40px"><div class="spinner" style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><p style="color:var(--text3)">Analyzing email source...</p></div>';
+
+const results = await analyzeEmailSource(source);
+renderResults(container, results, null);
+}
+
+async function analyzeEmailSource(source) {
+const checks = [];
+const findings = [];
+let score = 100;
+
+// 1. Extract headers
+const headers = {};
+const lines = source.split('\n');
+let currentHeader = '';
+for(const line of lines) {
+const headerMatch = line.match(/^([A-Za-z\-]+):\s*(.*)/);
+if(headerMatch) {
+currentHeader = headerMatch[1].toLowerCase();
+headers[currentHeader] = (headers[currentHeader] || '') + (headers[currentHeader] ? '\n' : '' ) + headerMatch[2].trim();
+} else if(line.startsWith(' ') || line.startsWith('\t')) {
+if(currentHeader) {
+headers[currentHeader] += '\n' + line.trim();
+}
+}
+}
+
+// 2. Extract From domain
+let fromDomain = '';
+const fromHeader = headers['from'] || '';
+const fromMatch = fromHeader.match(/@([^\s>]+)/);
+if(fromMatch) fromDomain = fromMatch[1].toLowerCase();
+
+let returnPathDomain = '';
+const returnPath = headers['return-path'] || headers['reply-to'] || '';
+const rpMatch = returnPath.match(/@([^\s>]+)/);
+if(rpMatch) returnPathDomain = rpMatch[1].toLowerCase();
+
+// 3. From / Reply-To mismatch
+if(fromDomain && returnPathDomain && fromDomain !== returnPathDomain) {
+findings.push({text:'<strong>From</strong> domain ('+fromDomain+') differs from <strong>Return-Path/Reply-To</strong> domain ('+returnPathDomain+'). This is a major red flag for phishing.',severity:'critical'});
+checks.push({name:'From vs Reply-To Match',desc:'Domains do not match',status:'fail',icon:'fail'});
+score -= 30;
+} else if(fromDomain) {
+checks.push({name:'From vs Reply-To Match',desc:'Domains match',status:'pass',icon:'pass'});
+}
+
+// 4. SPF check
+const authResults = headers['authentication-results'] || '';
+let spfPass = false, dkimPass = false, dmarcPass = false;
+if(authResults) {
+if(/spf\s*=\s*pass/i.test(authResults)) { spfPass = true; }
+if(/dkim\s*=\s*pass/i.test(authResults)) { dkimPass = true; }
+if(/dmarc\s*=\s*pass/i.test(authResults)) { dmarcPass = true; }
+}
+
+const spfHeader = headers['received-spf'] || '';
+if(spfHeader) {
+if(/pass/i.test(spfHeader)) spfPass = true;
+if(/fail|softfail|neutral/i.test(spfHeader)) {
+checks.push({name:'SPF Authentication',desc:'SPF result: fail/softfail',status:'fail',icon:'fail'});
+findings.push({text:'SPF check returned <strong>fail</strong>. The sending server is not authorized to send emails for this domain.',severity:'critical'});
+score -= 20;
+} else if(spfPass) {
+checks.push({name:'SPF Authentication',desc:'SPF passed',status:'pass',icon:'pass'});
+} else {
+checks.push({name:'SPF Authentication',desc:'SPF result unclear',status:'info',icon:'info'});
+}
+} else if(authResults) {
+if(spfPass) {
+checks.push({name:'SPF Authentication',desc:'SPF passed (from Authentication-Results)',status:'pass',icon:'pass'});
+} else {
+checks.push({name:'SPF Authentication',desc:'SPF result not found',status:'info',icon:'info'});
+findings.push({text:'No SPF authentication result found in headers. Legitimate emails typically have SPF configured.',severity:'info'});
+}
+}
+
+// DKIM
+if(authResults) {
+if(dkimPass) {
+checks.push({name:'DKIM Authentication',desc:'DKIM signature verified',status:'pass',icon:'pass'});
+} else {
+checks.push({name:'DKIM Authentication',desc:'DKIM not verified',status:'warn',icon:'warn'});
+findings.push({text:'DKIM signature was <strong>not verified</strong>. DKIM helps ensure the email was not tampered with.',severity:'warning'});
+score -= 15;
+}
+}
+
+// DMARC
+if(authResults) {
+if(dmarcPass) {
+checks.push({name:'DMARC Authentication',desc:'DMARC policy passed',status:'pass',icon:'pass'});
+} else {
+checks.push({name:'DMARC Authentication',desc:'DMARC not aligned',status:'warn',icon:'warn'});
+findings.push({text:'DMARC check <strong>not passed</strong>. DMARC prevents domain spoofing.',severity:'warning'});
+score -= 15;
+}
+}
+
+// 5. Scan body for suspicious patterns
+const bodyStart = source.indexOf('\n\n');
+const body = bodyStart > -1 ? source.slice(bodyStart).trim() : source;
+
+let patternFindings = [];
+for(const {pattern,label,severity} of SUSPICIOUS_PATTERNS) {
+if(pattern.test(body)) {
+patternFindings.push({text:'Detected: <strong>'+label+'</strong>',severity});
+}
+}
+
+if(patternFindings.length > 0) {
+const criticalCount = patternFindings.filter(f => f.severity === 'critical').length;
+const warningCount = patternFindings.filter(f => f.severity === 'warning').length;
+checks.push({name:'Suspicious Content Scan',desc:patternFindings.length+' suspicious pattern'+(patternFindings.length>1?'s':'')+' found',status: criticalCount > 0 ? 'fail' : 'warn',icon: criticalCount > 0 ? 'fail' : 'warn'});
+patternFindings.forEach(f => findings.push(f));
+score -= Math.min(30, patternFindings.length * 5 + criticalCount * 10);
+} else if(body.length > 50) {
+checks.push({name:'Suspicious Content Scan',desc:'No suspicious patterns detected',status:'pass',icon:'pass'});
+}
+
+// 6. Check for phishing links
+const urlPattern = /https?:\/\/[^\s<>"']+/gi;
+const urls = body.match(urlPattern) || [];
+if(urls.length > 0) {
+const suspiciousUrls = urls.filter(url => {
+const urlDomain = extractDomain(url);
+if(!urlDomain) return false;
+const isFake = cachedFakeDomains.has(urlDomain);
+const typos = detectTyposquatting(urlDomain);
+return isFake || typos.length > 0;
+});
+if(suspiciousUrls.length > 0) {
+checks.push({name:'Link Analysis',desc:suspiciousUrls.length+' suspicious URL'+(suspiciousUrls.length>1?'s':'')+' found',status:'fail',icon:'fail'});
+findings.push({text:'Email contains <strong>'+suspiciousUrls.length+' suspicious URLs</strong> pointing to known phishing or lookalike domains.',severity:'critical'});
+score -= 25;
+} else {
+checks.push({name:'Link Analysis',desc:urls.length+' URL'+(urls.length>1?'s':'')+' found, none flagged',status:'pass',icon:'pass'});
+findings.push({text:'Email contains <strong>'+urls.length+' URL(s)</strong>, none match known threat databases.',severity:'info'});
+}
+}
+
+// 7. Check for suspicious attachments
+const attachmentTypes = ['exe','bat','cmd','vbs','ps1','js','jar','scr','zip','rar','7z','docm','xlsm','pptm'];
+const attachPattern = new RegExp('(?:filename|name|attachment)\\s*=\\s*["\']?[^"\'\\s]+\\.('+attachmentTypes.join('|')+')(?:["\']|\\s|;|$)', 'gi');
+const attachments = source.match(attachPattern);
+if(attachments && attachments.length > 0) {
+checks.push({name:'Attachment Scan',desc:attachments.length+' potentially dangerous attachment'+(attachments.length>1?'s':''),status:'fail',icon:'fail'});
+findings.push({text:'Email contains potentially dangerous attachment(s) of type: <strong>'+attachments.map(a=>a.replace(/^[^.]*\./,'.').replace(/["']/g,'')).join(', ')+'</strong>.',severity:'critical'});
+score -= 20;
+} else {
+checks.push({name:'Attachment Scan',desc:'No dangerous attachments detected',status:'pass',icon:'pass'});
+}
+
+// 8. Check domain if present
+if(fromDomain) {
+const domainResults = await analyzeDomain(fromDomain);
+domainResults.checks.forEach(c => {
+if(c.status !== 'pass') {
+checks.push({name:'Sender Domain: '+c.name,desc:c.desc,status:c.status,icon:c.icon});
+}
+});
+domainResults.findings.forEach(f => findings.push(f));
+score = Math.min(score, domainResults.score - 5);
+}
+
+score = Math.max(0, Math.min(100, score));
+
+return {score,checks,findings,maxScore:100};
+}
+
+// === SCREENSHOT CHECK ===
+function setupScreenshot() {
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const previewArea = document.getElementById('previewArea');
+const previewImage = document.getElementById('previewImage');
+const ocrStatus = document.getElementById('ocrStatus');
+const ocrStatusText = document.getElementById('ocrStatusText');
+const checkBtn = document.getElementById('checkScreenshotBtn');
+const ocrTextArea = document.getElementById('ocrTextArea');
+const ocrText = document.getElementById('ocrText');
+
+// Drag & drop events
+['dragenter','dragover'].forEach(evt => {
+dropzone.addEventListener(evt, e => {
+e.preventDefault();
+dropzone.classList.add('drag-over');
+});
+});
+['dragleave','drop'].forEach(evt => {
+dropzone.addEventListener(evt, e => {
+e.preventDefault();
+dropzone.classList.remove('drag-over');
+});
+});
+
+fileInput.addEventListener('change', handleFile);
+dropzone.addEventListener('drop', e => {
+const files = e.dataTransfer.files;
+if(files.length > 0) {
+fileInput.files = files;
+handleFile();
+}
+});
+
+async function handleFile() {
+const file = fileInput.files[0];
+if(!file) return;
+
+if(!file.type.startsWith('image/')) {
+showToast('Please upload an image file','error');
+return;
+}
+
+const reader = new FileReader();
+reader.onload = async function(e) {
+previewImage.src = e.target.result;
+previewArea.style.display = 'block';
+checkBtn.classList.add('hidden');
+ocrTextArea.classList.add('hidden');
+
+// Run OCR
+ocrStatus.style.display = 'flex';
+ocrStatusText.textContent = 'Running OCR on image...';
+
+try {
+const result = await Tesseract.recognize(e.target.result, 'eng', {
+logger: info => {
+if(info.status === 'recognizing text') {
+ocrStatusText.textContent = 'Recognizing: '+Math.round(info.progress*100)+'%';
+}
+}
+});
+ocrText.value = result.data.text;
+ocrTextArea.classList.remove('hidden');
+checkBtn.classList.remove('hidden');
+ocrStatus.style.display = 'none';
+
+if(!result.data.text.trim()) {
+showToast('No text could be extracted from this image','error');
+}
+} catch(err) {
+ocrStatus.style.display = 'none';
+showToast('OCR processing failed: '+err.message,'error');
+console.error(err);
+}
+};
+reader.readAsDataURL(file);
+}
+
+checkBtn.addEventListener('click', async () => {
+const text = ocrText.value.trim();
+if(!text) { showToast('No text extracted from screenshot','error'); return; }
+
+const container = document.getElementById('screenshotResults');
+container.style.display = 'block';
+container.innerHTML = '<div class="text-center" style="padding:40px"><div class="spinner" style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><p style="color:var(--text3)">Analyzing extracted text...</p></div>';
+
+// Try to extract domain from text
+    const domainMatch = text.match(/@([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}/g);
+
+    let results;
+    if(domainMatch) {
+        const domain = domainMatch[0].toLowerCase();
+        const analytics = await analyzeDomain(domain);
+        results = analytics;
+        results.findings.unshift({text:'Extracted domain from screenshot: <strong>'+domain+'</strong>',severity:'info'});
+    } else {
+        results = await analyzeEmailSource(text);
+    }
+renderResults(container, results, null);
+});
+}
+
+// === RENDER RESULTS ===
+function renderResults(container, results, domain) {
+const {score,checks,findings} = results;
+const isSafe = score >= 70;
+const isSuspicious = score >= 40 && score < 70;
+const isDanger = score < 40;
+
+let statusClass = 'unknown';
+let statusLabel = 'Unknown';
+let statusIcon = '&#128300;';
+
+if(isSafe) { statusClass='safe'; statusLabel='Likely Legitimate'; statusIcon='&#9989;'; }
+else if(isSuspicious) { statusClass='suspicious'; statusLabel='Suspicious'; statusIcon='&#9888;'; }
+else if(isDanger) { statusClass='danger'; statusLabel='Highly Suspicious'; statusIcon='&#128308;'; }
+
+const circumference = 2 * Math.PI * 45;
+const offset = circumference - (score/100) * circumference;
+
+const criticalFindings = findings.filter(f => f.severity === 'critical');
+const warningFindings = findings.filter(f => f.severity === 'warning');
+const infoFindings = findings.filter(f => f.severity === 'info');
+
+let scoreColor = 'var(--success)';
+if(isSuspicious) scoreColor = 'var(--warning)';
+if(isDanger) scoreColor = 'var(--danger)';
+
+let checksHtml = checks.map(c => {
+const iconMap = {pass:'&#9989;',fail:'&#10060;',warn:'&#9888;',info:'&#8505;'};
+const statusMap = {pass:'Pass',fail:'Fail',warn:'Warning',info:'Info'};
+return `<div class="check-card">
+<div class="check-header">
+<div class="check-icon ${c.icon}">${iconMap[c.icon]||'&#8505;'}</div>
+<div class="check-info">
+<div class="check-name">${c.name}</div>
+<div class="check-desc">${c.desc}</div>
+<div class="check-status ${c.icon}">${statusMap[c.icon]||'Info'}</div>
+</div>
+</div>
+</div>`;
+}).join('');
+
+const severityOrder = {critical:0,warning:1,info:2};
+let findingsHtml = [...findings].sort((a,b) => severityOrder[a.severity] - severityOrder[b.severity]).map(f => {
+    const sevClass = f.severity;
+    const icon = sevClass === 'critical' ? '&#128308;' : sevClass === 'warning' ? '&#9888;' : '&#8505;';
+    return `<div class="finding-item ${sevClass}"><span class="finding-icon">${icon}</span><span class="finding-text">${f.text}</span></div>`;
+}).join('');
+
+container.innerHTML = `
+<div class="result-header">
+<div class="result-title">
+<h2>${domain ? 'Analysis: <span style="color:var(--accent)">'+domain+'</span>' : 'Analysis Results'}</h2>
+<span class="status-badge ${statusClass}">${statusIcon} ${statusLabel}</span>
+</div>
+<button class="btn btn-secondary" onclick="this.parentElement.parentElement.querySelector('.findings-section, .checks-section').scrollIntoView({behavior:'smooth'})">&#128203; View Details</button>
+</div>
+
+<div class="score-section">
+<div class="gauge">
+<svg width="120" height="120" viewBox="0 0 120 120">
+<circle class="bg" cx="60" cy="60" r="45"/>
+<circle class="fg" cx="60" cy="60" r="45" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" style="stroke:${scoreColor}"/>
+</svg>
+<div class="center">
+<span class="score-value" style="color:${scoreColor}">${score}</span>
+<span class="score-label">Score</span>
+</div>
+</div>
+<div class="score-details">
+<div class="detail-row"><span class="detail-label">Overall Verdict</span><span class="detail-value ${statusClass}">${statusLabel}</span></div>
+<div class="detail-row"><span class="detail-label">Checks Performed</span><span class="detail-value">${checks.length}</span></div>
+<div class="detail-row"><span class="detail-label">Critical Issues</span><span class="detail-value ${criticalFindings.length>0?'bad':'good'}">${criticalFindings.length}</span></div>
+<div class="detail-row"><span class="detail-label">Warnings</span><span class="detail-value ${warningFindings.length>0?'warn':'good'}">${warningFindings.length}</span></div>
+<div class="detail-row"><span class="detail-label">Informational</span><span class="detail-value">${infoFindings.length}</span></div>
+</div>
+</div>
+
+<div class="checks-grid">${checksHtml}</div>
+
+${findings.length > 0 ? `
+<div class="findings-section">
+<h3>Detailed Findings <span class="count-badge">${findings.length}</span></h3>
+${findingsHtml}
+</div>` : ''}
+`;
+
+// Animate the gauge after render
+requestAnimationFrame(() => {
+const fg = container.querySelector('.gauge .fg');
+if(fg) {
+fg.style.transition = 'none';
+fg.style.strokeDashoffset = circumference;
+requestAnimationFrame(() => {
+fg.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+fg.style.strokeDashoffset = offset;
+});
+}
+});
+}
+
+</script>
+</body>
+</html>
